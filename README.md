@@ -1,5 +1,5 @@
 # ViralUp 🚀
-### TikTok Trend Dashboard
+### TikTok Trends Analysis Dashboard
 
 A data science project analyzing 48,000+ TikTok videos to identify 
 what content performs best and predict virality.
