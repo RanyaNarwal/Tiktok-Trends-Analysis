@@ -46,7 +46,7 @@ segment,
     ROUND(AVG(has_emoji), 3)          AS emoji_share
 FROM scored
 GROUP BY CASE WHEN views_decile = 10 THEN 'Top 10%' ELSE 'rest' END
-ORDER BY segment DESC;
+ORDER BY min_views DESC;
 
 -- ── Genres by Avg Views ─────────────────────
 SELECT
@@ -101,8 +101,7 @@ SELECT
     COUNT(*) AS total_videos
 FROM tiktok_videos
 GROUP BY upload_hour
-ORDER BY avg_views DESC
-
+ORDER BY avg_views DESC;
 
 -- ── Weekend vs Weekday─────────────────────────────────
 WITH wk AS (
@@ -118,7 +117,7 @@ SELECT
 FROM wk
 ORDER BY is_weekend;
 
--- ── Best Genre + Hour Combo ───────────────────────
+-- ── Best Genre + Hour Combo (20+ videos) ───────────────────────
 SELECT
     genre,
     upload_hour,
@@ -126,9 +125,10 @@ SELECT
     COUNT(*) AS total_videos
 FROM tiktok_videos
 GROUP BY genre, upload_hour
-ORDER BY genre, upload_hour;
+HAVING COUNT(*) >= 20
+ORDER BY avg_views DESC;
 
--- ── Best Hashtags (+100 videos) ─────────────────────────────────
+-- ── Best Hashtags (100+ videos) ─────────────────────────────────
 SELECT
     hashtag,
     ROUND(AVG(views), 0) AS avg_views,
@@ -149,3 +149,13 @@ FROM tiktok_videos
 GROUP BY genre, year_month
 ORDER BY genre, year_month;
 
+-- ── Rising vs Fading Genres ──────────────────────
+SELECT
+    genre,
+    ROUND(AVG(CASE WHEN year_month <= '2025-04' THEN views END), 0) AS jan_apr_avg_views,
+    ROUND(AVG(CASE WHEN year_month >= '2025-05' THEN views END), 0) AS may_aug_avg_views,
+    ROUND(100.0 * (AVG(CASE WHEN year_month >= '2025-05' THEN views END) /
+                   AVG(CASE WHEN year_month <= '2025-04' THEN views END) - 1), 1) AS pct_change
+FROM tiktok_videos
+GROUP BY genre
+ORDER BY pct_change DESC;
