@@ -34,7 +34,7 @@ Among the five highest-viewed genres with 2,000+ videos (Fashion, Lifestyle, Gam
 - **Git and GitHub** — Version control
 - **VS Code** — Code and query editing
 
-## 📁 Project Structure
+## Project Structure
 - `explore.py` — Initial data exploration
 - `analysis.py` — Deep EDA and insights
 - `database.py` — SQL database setup
