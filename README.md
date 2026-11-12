@@ -6,6 +6,8 @@ A data science project analyzing 48,000+ TikTok videos to identify what content 
 ## Dashboard
 [View Live Dashboard]: https://public.tableau.com/views/ViralUp-TikTokTrends/Dashboard1?:language=en-US&publish=yes&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link
 
+![Dashboard](images/dashboard.png)
+
 ## Data
 Public Kaggle dataset, "YouTube Shorts & TikTok Trends 2025" (48,079 rows, 58 columns).
 Filtered to TikTok only: 28,844 videos, 14 genres, Jan to Aug 2025.
