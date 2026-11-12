@@ -4,7 +4,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.dummy import DummyClassifier
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 from sklearn.metrics import classification_report, accuracy_score, f1_score
  
 # ── Load Data ────────────────────────────────────────
@@ -27,7 +28,7 @@ print(data["trend_label"].value_counts())
 # ── Encode Target and Features ───────────────────────
 le = LabelEncoder()
 y = le.fit_transform(data["trend_label"])
-X = pd.get_dummies(data[numeric + categorical], columns=categorical, dtype=int)
+X = data[numeric + categorical]
  
 # ── Train and Test Split ───────────────────────
 X_train, X_test, y_train, y_test = train_test_split(
@@ -41,11 +42,21 @@ print(f"\nBaseline accuracy: {accuracy_score(y_test, baseline.predict(X_test)):.
 # Logistc Regression and Random Forest Models
 models = {
     "Logistic Regression": make_pipeline(
-        StandardScaler(),
+        ColumnTransformer([
+            ("numeric", StandardScaler(), numeric),
+            ("categorical", OneHotEncoder(handle_unknown="ignore"), categorical),
+        ]),
         LogisticRegression(max_iter=1000, class_weight="balanced", random_state=42),
     ),
-    "Random Forest": RandomForestClassifier(
-        n_estimators=100, class_weight="balanced", random_state=42, n_jobs=-1
+    "Random Forest": make_pipeline(
+        ColumnTransformer(
+            [("categorical", OneHotEncoder(handle_unknown="ignore"), categorical)],
+            remainder="passthrough",
+            verbose_feature_names_out=False,
+        ),
+        RandomForestClassifier(
+            n_estimators=100, class_weight="balanced", random_state=42, n_jobs=-1
+        ),
     ),
 }
  
@@ -62,6 +73,7 @@ cv = cross_val_score(models["Random Forest"], X, y, cv=5, scoring="f1_macro", n_
 print(f"Random Forest 5-fold macro F1: {cv.mean():.4f} (+/- {cv.std():.4f})")
 
 # ── Feature Importance ───────────────────────────────
-importance = pd.Series(models["Random Forest"].feature_importances_, index=X.columns)
+rf = models["Random Forest"]
+importance = pd.Series(rf[-1].feature_importances_, index=rf[:-1].get_feature_names_out())
 print("\nTop 10 features (Random Forest):")
 print(importance.sort_values(ascending=False).head(10).round(4).to_string())
