@@ -6,86 +6,62 @@ from sklearn.dummy import DummyClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import classification_report, accuracy_score, f1_score
-
-# ── Load ML-ready dataset ────────────────────────────
-print("Dataset")
+ 
+# ── Load Data ────────────────────────────────────────
 df = pd.read_csv("youtube_shorts_tiktok_trends_2025.csv_ML.csv")
 df = df[df["platform"] == "tiktok"]
-print(f"Rows loaded: {len(df)}")
-
-# ── Check target variable ────────────────────────────
-print("\nTrend Label values:")
-print(df["trend_label"].value_counts())
-
-# ── Encode target ────────────────────────────────────
-le = LabelEncoder()
-df["target"] = le.fit_transform(df["trend_label"].astype(str))
-print("\nEncoded labels:", dict(zip(le.classes_, le.transform(le.classes_))))
-
-# ── Select Features ──────────────────────────────────
-features = [
-    "title_len",
-    "text_richness",
-    "like_rate",
-    "comment_rate",
-    "share_rate",
-    "like_rate_log",
-    "comment_rate_log",
-    "share_rate_log",
-    "views_per_day",
-    "likes_per_day",
-    "rel_like",
-    "rel_share",
-    "rel_combo",
-    "like_hashtag_interaction",
-    "share_hashtag_interaction",
-    "weekend_hashtag_boost",
-    "platform_cat",
-    "region_cat",
-    "traffic_source_cat",
-    "device_brand_cat",
-    "creator_tier_cat"
+ 
+# ── Features ────────────────────────────────────────
+numeric = [
+    "title_len", "text_richness", "like_rate", "comment_rate", "share_rate",
+    "like_rate_log", "comment_rate_log", "share_rate_log",
+    "views_per_day", "likes_per_day", "rel_like", "rel_share", "rel_combo",
+    "like_hashtag_interaction", "share_hashtag_interaction", "weekend_hashtag_boost",
 ]
-
-df_model = df[features + ["target"]].dropna()
-print(f"\nClean rows for modeling: {len(df_model)}")
-
-# ── Split Data ───────────────────────────────────────
-X = df_model[features]
-y = df_model["target"]
-
+categorical = ["region_cat", "traffic_source_cat", "device_brand_cat", "creator_tier_cat"]
+ 
+data = df[numeric + categorical + ["trend_label"]].dropna()
+print(f"Rows used: {len(data)}")
+print(data["trend_label"].value_counts())
+ 
+# ── Encode Target and Features ───────────────────────
+le = LabelEncoder()
+y = le.fit_transform(data["trend_label"])
+X = pd.get_dummies(data[numeric + categorical], columns=categorical, dtype=int)
+ 
+# ── Train and Test Split ───────────────────────
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
-print(f"Training samples: {len(X_train)}")
-print(f"Testing samples: {len(X_test)}")
 
-
-# ── Model 1: Baseline Classification ─────────────────────
-print("\n── Baseline Classification ──")
-base = DummyClassifier(strategy="most_frequent").fit(X_train, y_train)
-print(f"Baseline accuracy: {accuracy_score(y_test, base.predict(X_test)):.4f}")
-
-# ── Model 2: Logistic Regression ─────────────────────
-print("\n── Logistic Regression ──")
-lr = LogisticRegression(max_iter=1000, random_state=42)
-lr.fit(X_train, y_train)
-lr_preds = lr.predict(X_test)
-print(f"Accuracy: {accuracy_score(y_test, lr_preds):.4f}")
-print(classification_report(y_test, lr_preds, target_names=le.classes_))
-
-# ── Model 3: Random Forest ───────────────────────────
-print("\n── Random Forest ──")
-rf = RandomForestClassifier(n_estimators=100, random_state=42)
-rf.fit(X_train, y_train)
-rf_preds = rf.predict(X_test)
-print(f"Accuracy: {accuracy_score(y_test, rf_preds):.4f}")
-print(classification_report(y_test, rf_preds, target_names=le.classes_))
+# Baseline Model
+baseline = DummyClassifier(strategy="most_frequent").fit(X_train, y_train)
+print(f"\nBaseline accuracy: {accuracy_score(y_test, baseline.predict(X_test)):.4f}")
+ 
+# Logistc Regression and Random Forest Models
+models = {
+    "Logistic Regression": make_pipeline(
+        StandardScaler(),
+        LogisticRegression(max_iter=1000, class_weight="balanced", random_state=42),
+    ),
+    "Random Forest": RandomForestClassifier(
+        n_estimators=100, class_weight="balanced", random_state=42, n_jobs=-1
+    ),
+}
+ 
+# ── Train and Evaluate ───────────────────────────────
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    preds = model.predict(X_test)
+    print(f"\n{name}: accuracy {accuracy_score(y_test, preds):.4f}, "
+          f"macro F1 {f1_score(y_test, preds, average='macro'):.4f}")
+    print(classification_report(y_test, preds, target_names=le.classes_))
+ 
+# ── Cross Validation ───────────────────────────────
+cv = cross_val_score(models["Random Forest"], X, y, cv=5, scoring="f1_macro", n_jobs=-1)
+print(f"Random Forest 5-fold macro F1: {cv.mean():.4f} (+/- {cv.std():.4f})")
 
 # ── Feature Importance ───────────────────────────────
-print("\n── Most Important Features (Random Forest) ──")
-importance = pd.DataFrame({
-    "feature": features,
-    "importance": rf.feature_importances_
-}).sort_values("importance", ascending=False)
-print(importance.to_string())
+importance = pd.Series(models["Random Forest"].feature_importances_, index=X.columns)
+print("\nTop 10 features (Random Forest):")
+print(importance.sort_values(ascending=False).head(10).round(4).to_string())
