@@ -1,10 +1,10 @@
 # ViralUp 🚀
 ### TikTok Trends Analysis Dashboard
 
-A data science project analyzing 48,000+ TikTok videos to identify what content performs best and drives views for people who want to grow as creators. It covers data cleaning, SQL analysis, a machine learning model, and an interactive dashboard.
+A data science project analyzing 28,000+ TikTok videos to identify what content performs best and drives views for people who want to grow as creators. It covers data cleaning, SQL analysis, a machine learning model, and an interactive dashboard.
 
 ## Dashboard
-[View Live Dashboard]: https://public.tableau.com/views/ViralUp-TikTokTrends/Dashboard1?:language=en-US&publish=yes&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link
+[View Live Dashboard](https://public.tableau.com/views/ViralUp-TikTokTrends/Dashboard1)
 
 ![Dashboard](images/dashboard.png)
 
@@ -25,7 +25,7 @@ Weekends are only about 2% higher than weekdays.
 Videos of length 0–15s (103,099) and 46–60s (102,587) average the most views, and 61–90s (92,335) the least. That is about a 12% gap with no steady decline as video length increases.
 
 **4. How do the top genres move month to month?**
-Among the five highest-viewed genres with 2,000+ videos (Fashion, Lifestyle, Gaming, Tech and Comedy), monthly averages stay between roughly 85,000 and 127,000 views. DIY is excluded from this chart because its 142 videos and causes class imbalance.
+Among the five highest-viewed genres with 2,000+ videos (Fashion, Lifestyle, Gaming, Tech and Comedy), monthly averages stay between roughly 85,000 and 127,000 views. DIY is excluded from this chart because its 142 videos are too few for reliable monthly averages.
 
 ## Tech Stack and Tools
 - **Python (Pandas, Scikit-learn)** — Data cleaning, analysis, ML model, loading data into SQLite
