@@ -25,7 +25,7 @@ Weekends are only about 2% higher than weekdays.
 Videos of length 0–15s (103,099) and 46–60s (102,587) average the most views, and 61–90s (92,335) the least. That is about a 12% gap with no steady decline as video length increases.
 
 **4. How do the top genres move month to month?**
-Among the five highest-viewed genres with 2,000+ videos (Fashion, Lifestyle, Gaming, Tech and Comedy), monthly averages stay between roughly 85,000 and 127,000 views with no clear rise or fall, so I don't claim any genre is rising or fading. DIY is excluded from this chart because its 142 videos make its monthly numbers swing widely.
+Among the five highest-viewed genres with 2,000+ videos (Fashion, Lifestyle, Gaming, Tech and Comedy), monthly averages stay between roughly 85,000 and 127,000 views. DIY is excluded from this chart because its 142 videos and causes class imbalance.
 
 ## Tech Stack and Tools
 - **Python (Pandas, Scikit-learn)** — Data cleaning, analysis, ML model, loading data into SQLite
